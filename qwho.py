@@ -4,8 +4,16 @@ import subprocess
 
 # collect job data
 queues = ['secondary', 'wagner', 'qmchamm', 'physics', 'test']
-result = subprocess.run(['squeue', '--json'], check=True, capture_output=True).stdout.decode('utf-8')
-jobs = json.loads(result)
+result = subprocess.run(['squeue', '--json'], check=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
+result = '\n'.join([line for line in result.split('\n') if 'error' not in line])
+lines = result.split('\n')
+result_l = []
+for j, line in enumerate(lines):
+    if j == 15 and ']' in line:
+        continue
+    result_l.append(line)
+output = '\n'.join(result_l)
+jobs = json.loads(output)
 l = []
 for job in jobs['jobs']:
     if job['partition'] in queues:
